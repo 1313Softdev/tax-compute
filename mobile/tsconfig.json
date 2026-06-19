@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "lib": [
+      "es2020"
+    ],
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "noEmit": true,
+    "strict": false,
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "App.tsx"
+  ],
+  "extends": "expo/tsconfig.base"
+}

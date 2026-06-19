@@ -1,0 +1,16 @@
+{
+  "name": "tax-compu-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "shared-engine",
+    "backend",
+    "web",
+    "mobile"
+  ],
+  "scripts": {
+    "test": "npm run test --workspace=shared-engine",
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:web": "npm run dev --workspace=web"
+  }
+}

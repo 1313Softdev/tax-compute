@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "TaxCompute Mobile",
+    "slug": "taxcompute-mobile",
+    "scheme": "taxcompute",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kuku.taxcompute"
+    },
+    "android": {
+      "package": "com.kuku.taxcompute",
+      "versionCode": 1
+    },
+    "plugins": [
+      "expo-status-bar"
+    ]
+  }
+}

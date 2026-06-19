@@ -1,0 +1,106 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String           @id @default(uuid())
+  email        String           @unique
+  passwordHash String?
+  role         String           @default("USER") // "USER" | "ADMIN"
+  isSuspended  Boolean          @default(false)
+  phone        String?          @unique
+  otpCode      String?
+  otpExpiresAt DateTime?
+  isEmailVerified            Boolean          @default(false)
+  emailVerificationCode      String?
+  emailVerificationExpiresAt DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  profile      Profile?
+  computations TaxComputation[]
+  documents    Document[]
+}
+
+model Profile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName       String
+  fatherName     String
+  dateOfBirth    String   // YYYY-MM-DD
+  gender         String   // Male / Female / Other
+  panNumber      String
+  aadhaarNumber  String
+  phone          String
+  address        String
+  city           String
+  state          String
+  pinCode        String
+  bankName       String
+  accountNumber  String
+  ifscCode       String
+  branchName     String
+  employmentType String   // Salaried / Business / Professional / Pensioner / Freelancer
+  employerName   String?
+  gstNumber      String?
+  completed      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Document {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName   String
+  fileType   String   // PAN, Aadhaar, Form16, SalarySlip, BankStatement, InvestmentProof, Other
+  fileUrl    String
+  uploadedAt DateTime @default(now())
+}
+
+model TaxComputation {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessmentYear    String   // AY 2024-25, etc.
+  inputsJson        String   // Serialized TaxComputationInputs
+  outputsJson       String   // Serialized RegimeComparisonResult
+  recommendedRegime String   // "Old" | "New"
+  taxSaved          Float
+  totalTaxPayable   Float
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model TaxSlabConfig {
+  id             String   @id @default(uuid())
+  assessmentYear String
+  regime         String   // "Old" | "New"
+  configJson     String   // Serialized overrides
+  updatedAt      DateTime @updatedAt
+
+  @@unique([assessmentYear, regime])
+}
+
+model Blog {
+  id        String   @id @default(uuid())
+  title     String
+  slug      String   @unique
+  content   String
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FAQ {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String
+  category  String   // General, Slabs, Deductions, Others
+  createdAt DateTime @default(now())
+}
