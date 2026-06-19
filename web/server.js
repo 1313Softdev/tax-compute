@@ -25,7 +25,7 @@ try {
 }
 
 const dev = false
-const app = next({ dev })
+const app = next({ dev, dir: __dirname })
 const handle = app.getRequestHandler()
 
 const port = process.env.PORT || 3000
