@@ -68,8 +68,8 @@ model TaxComputation {
   userId            String
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   assessmentYear    String   // AY 2024-25, etc.
-  inputsJson        String   // Serialized TaxComputationInputs
-  outputsJson       String   // Serialized RegimeComparisonResult
+  inputsJson        String   @db.Text // Serialized TaxComputationInputs
+  outputsJson       String   @db.Text // Serialized RegimeComparisonResult
   recommendedRegime String   // "Old" | "New"
   taxSaved          Float
   totalTaxPayable   Float
@@ -81,7 +81,7 @@ model TaxSlabConfig {
   id             String   @id @default(uuid())
   assessmentYear String
   regime         String   // "Old" | "New"
-  configJson     String   // Serialized overrides
+  configJson     String   @db.Text // Serialized overrides
   updatedAt      DateTime @updatedAt
 
   @@unique([assessmentYear, regime])
@@ -91,7 +91,7 @@ model Blog {
   id        String   @id @default(uuid())
   title     String
   slug      String   @unique
-  content   String
+  content   String   @db.Text
   published Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -100,7 +100,7 @@ model Blog {
 model FAQ {
   id        String   @id @default(uuid())
   question  String
-  answer    String
+  answer    String   @db.Text
   category  String   // General, Slabs, Deductions, Others
   createdAt DateTime @default(now())
 }
