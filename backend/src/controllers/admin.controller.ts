@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import prisma from '../db';
 
 // 1. GET ALL USERS (with profile completeness check)
@@ -228,5 +229,41 @@ export const incrementVisitorCount = async (req: Request, res: Response) => {
     return res.json({ count: counter.count });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
+  }
+};
+
+export const impersonateUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-change-in-prod-12345';
+  
+  try {
+    const userToImpersonate = await prisma.user.findUnique({
+      where: { id }
+    });
+
+    if (!userToImpersonate) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (userToImpersonate.role === 'ADMIN') {
+      return res.status(400).json({ error: 'Cannot impersonate administrator accounts' });
+    }
+
+    const token = jwt.sign(
+      { id: userToImpersonate.id, email: userToImpersonate.email, role: userToImpersonate.role },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    return res.json({
+      token,
+      user: {
+        id: userToImpersonate.id,
+        email: userToImpersonate.email,
+        role: userToImpersonate.role
+      }
+    });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message || 'Impersonation failed' });
   }
 };

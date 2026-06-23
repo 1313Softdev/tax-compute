@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '../../components/DashboardLayout';
 import { useAuth } from '../providers';
 import { useLanguage } from '../providers';
@@ -18,9 +18,11 @@ import {
   HelpCircle
 } from 'lucide-react';
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const router = useRouter();
-  const { user, token, apiUrl } = useAuth();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const { user, token, login, apiUrl } = useAuth();
   const { t } = useLanguage();
 
   const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'slabs' | 'cms'>('stats');
@@ -85,6 +87,12 @@ export default function AdminDashboard() {
     }
   }, [token, user]);
 
+  useEffect(() => {
+    if (tabParam && ['stats', 'users', 'slabs', 'cms'].includes(tabParam)) {
+      setActiveTab(tabParam as any);
+    }
+  }, [tabParam]);
+
   // Toggle user suspension
   const handleToggleSuspend = async (userId: string, currentStatus: boolean) => {
     try {
@@ -104,6 +112,33 @@ export default function AdminDashboard() {
       }
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleImpersonate = async (userId: string) => {
+    try {
+      const res = await fetch(`${apiUrl}/admin/users/${userId}/impersonate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Save admin context to support switching back
+        localStorage.setItem('adminToken', token || '');
+        localStorage.setItem('adminUser', JSON.stringify(user || {}));
+        
+        login(data.token, data.user);
+        router.push('/dashboard');
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Impersonation failed');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Network error occurred during impersonation');
     }
   };
 
@@ -332,17 +367,25 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4 text-center">
                         {usr.role !== 'ADMIN' ? (
-                          <button
-                            onClick={() => handleToggleSuspend(usr.id, usr.isSuspended)}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-3xs font-bold transition-colors ${
-                              usr.isSuspended 
-                                ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200' 
-                                : 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200'
-                            }`}
-                          >
-                            {usr.isSuspended ? <UserCheck className="w-3.5 h-3.5" /> : <Ban className="w-3.5 h-3.5" />}
-                            {usr.isSuspended ? 'Reactivate' : 'Suspend'}
-                          </button>
+                          <div className="flex justify-center gap-2">
+                            <button
+                              onClick={() => handleImpersonate(usr.id)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-950/20 dark:hover:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900/30 rounded-lg text-3xs font-bold transition-colors cursor-pointer"
+                            >
+                              Login As
+                            </button>
+                            <button
+                              onClick={() => handleToggleSuspend(usr.id, usr.isSuspended)}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-3xs font-bold transition-colors cursor-pointer ${
+                                usr.isSuspended 
+                                  ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200' 
+                                  : 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200'
+                              }`}
+                            >
+                              {usr.isSuspended ? <UserCheck className="w-3.5 h-3.5" /> : <Ban className="w-3.5 h-3.5" />}
+                              {usr.isSuspended ? 'Reactivate' : 'Suspend'}
+                            </button>
+                          </div>
                         ) : (
                           <span className="text-3xs text-slate-400 font-semibold">Admin Lock</span>
                         )}
@@ -509,5 +552,19 @@ export default function AdminDashboard() {
 
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <Suspense fallback={
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64 text-slate-400 font-semibold">
+          Authorizing and loading control panel...
+        </div>
+      </DashboardLayout>
+    }>
+      <AdminDashboardContent />
+    </Suspense>
   );
 }

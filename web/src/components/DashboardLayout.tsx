@@ -16,7 +16,8 @@ import {
   X, 
   Sun, 
   Moon, 
-  Languages 
+  Languages,
+  Users
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -30,6 +31,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   
   const [mobileOpen, setMobileOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [isImpersonating, setIsImpersonating] = useState(false);
 
   // Sync dark mode class
   useEffect(() => {
@@ -40,6 +42,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     } else {
       document.documentElement.classList.remove('dark');
     }
+    setIsImpersonating(!!localStorage.getItem('adminToken'));
   }, []);
 
   const toggleDarkMode = () => {
@@ -63,8 +66,29 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
   // Admin link
   if (user?.role === 'ADMIN') {
+    navItems.push({ label: t('userDirectory'), path: '/admin?tab=users', icon: Users });
     navItems.push({ label: t('adminPanel'), path: '/admin', icon: ShieldAlert });
   }
+
+  const isItemActive = (itemPath: string) => {
+    if (itemPath.includes('?')) {
+      const [basePath, searchStr] = itemPath.split('?');
+      if (pathname !== basePath) return false;
+      if (typeof window !== 'undefined') {
+        return window.location.search.includes(searchStr);
+      }
+      return false;
+    }
+    if (itemPath === '/admin') {
+      if (pathname !== '/admin') return false;
+      if (typeof window !== 'undefined' && window.location.search.includes('tab=')) {
+        const search = window.location.search;
+        return !search.includes('tab=') || search.includes('tab=stats');
+      }
+      return true;
+    }
+    return pathname === itemPath || pathname?.startsWith(itemPath + '/');
+  };
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
@@ -85,7 +109,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         <nav className="flex-1 space-y-1.5">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const active = pathname === item.path || pathname?.startsWith(item.path + '/');
+            const active = isItemActive(item.path);
             return (
               <Link
                 key={item.path}
@@ -168,7 +192,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         <nav className="flex-1 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const active = pathname === item.path;
+            const active = isItemActive(item.path);
             return (
               <Link
                 key={item.path}
@@ -243,6 +267,35 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             {darkMode ? <Sun className="w-4 h-4 text-yellow-500" /> : <Moon className="w-4 h-4" />}
           </button>
         </div>
+
+        {/* Impersonation Banner */}
+        {isImpersonating && (
+          <div className="bg-amber-500 text-slate-900 px-6 py-2.5 flex items-center justify-between text-xs font-bold shadow-sm shrink-0 border-b border-amber-600/30">
+            <span className="flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-900 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-950"></span>
+              </span>
+              Impersonation Mode Active: Viewing user portal ({user?.email})
+            </span>
+            <button
+              onClick={() => {
+                const adminToken = localStorage.getItem('adminToken');
+                const adminUser = localStorage.getItem('adminUser');
+                if (adminToken && adminUser) {
+                  localStorage.removeItem('adminToken');
+                  localStorage.removeItem('adminUser');
+                  localStorage.setItem('token', adminToken);
+                  localStorage.setItem('user', adminUser);
+                  window.location.href = '/admin';
+                }
+              }}
+              className="px-3 py-1 bg-slate-950 hover:bg-slate-900 text-white rounded-lg transition-colors cursor-pointer text-[10px]"
+            >
+              Return to Admin
+            </button>
+          </div>
+        )}
 
         {/* Page Content Viewport */}
         <main className="flex-1 p-4 md:p-8 overflow-y-auto animate-fade-in-up">

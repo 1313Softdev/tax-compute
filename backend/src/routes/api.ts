@@ -21,7 +21,8 @@ import {
   getFAQs,
   deleteFAQ,
   getVisitorCount,
-  incrementVisitorCount
+  incrementVisitorCount,
+  impersonateUser
 } from '../controllers/admin.controller';
 import { authenticateJWT, requireAdmin } from '../middleware/auth';
 
@@ -95,6 +96,7 @@ router.post('/ai/chat', authenticateJWT, askAssistant);
 // ==========================================
 router.get('/admin/users', authenticateJWT, requireAdmin, getUsers);
 router.put('/admin/users/:id/suspend', authenticateJWT, requireAdmin, toggleSuspendUser);
+router.post('/admin/users/:id/impersonate', authenticateJWT, requireAdmin, impersonateUser);
 router.get('/admin/analytics', authenticateJWT, requireAdmin, getAnalytics);
 router.post('/admin/slabs', authenticateJWT, requireAdmin, updateTaxSlabs);
 router.get('/admin/slabs', authenticateJWT, getTaxSlabs); // accessible to verify configurations

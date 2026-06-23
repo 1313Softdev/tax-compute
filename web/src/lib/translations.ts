@@ -42,7 +42,8 @@ export const translations: Record<Language, Record<string, string>> = {
     profileCompleteness: 'Profile Completeness',
     activeComputations: 'Recent Computations',
     savedDocuments: 'Your Tax Documents',
-    adminDashboard: 'Admin Control Center'
+    adminDashboard: 'Admin Control Center',
+    userDirectory: 'User Directory'
   },
   hi: {
     appName: 'टैक्सकंप्यूट.इन',
@@ -85,7 +86,8 @@ export const translations: Record<Language, Record<string, string>> = {
     profileCompleteness: 'प्रोफ़ाइल पूर्णता',
     activeComputations: 'हालिया गणनाएँ',
     savedDocuments: 'आपके कर दस्तावेज़',
-    adminDashboard: 'एडमिन नियंत्रण केंद्र'
+    adminDashboard: 'एडमिन नियंत्रण केंद्र',
+    userDirectory: 'उपयोगकर्ता निर्देशिका'
   },
   pa: {
     appName: 'ਟੈਕਸਕੰਪਿਊਟ.ਇਨ',
@@ -128,6 +130,7 @@ export const translations: Record<Language, Record<string, string>> = {
     profileCompleteness: 'ਪ੍ਰੋਫਾਈਲ ਸੰਪੂਰਨਤਾ',
     activeComputations: 'ਹਾਲੀਆ ਗਣਨਾਵਾਂ',
     savedDocuments: 'ਤੁਹਾਡੇ ਟੈਕਸ ਦਸਤਾਵੇਜ਼',
-    adminDashboard: 'ਐਡਮਿਨ ਕੰਟਰੋਲ ਕੇਂਦਰ'
+    adminDashboard: 'ਐਡਮਿਨ ਕੰਟਰੋਲ ਕੇਂਦਰ',
+    userDirectory: 'ਉਪਭੋਗਤਾ ਡਾਇਰੈਕਟਰੀ'
   }
 };
