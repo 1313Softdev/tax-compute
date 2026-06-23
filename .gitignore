@@ -9,3 +9,5 @@ out/
 .env
 backend/uploads/
 .DS_Store
+*.zip
+zi*
