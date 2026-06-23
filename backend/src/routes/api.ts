@@ -19,7 +19,9 @@ import {
   deleteBlog,
   createFAQ,
   getFAQs,
-  deleteFAQ
+  deleteFAQ,
+  getVisitorCount,
+  incrementVisitorCount
 } from '../controllers/admin.controller';
 import { authenticateJWT, requireAdmin } from '../middleware/auth';
 
@@ -107,5 +109,9 @@ router.delete('/cms/blogs/:id', authenticateJWT, requireAdmin, deleteBlog);
 router.post('/cms/faqs', authenticateJWT, requireAdmin, createFAQ);
 router.get('/cms/faqs', getFAQs);
 router.delete('/cms/faqs/:id', authenticateJWT, requireAdmin, deleteFAQ);
+
+// Visitor Counter
+router.get('/cms/visitor-count', getVisitorCount);
+router.post('/cms/visitor-count/increment', incrementVisitorCount);
 
 export default router;

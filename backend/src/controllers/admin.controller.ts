@@ -201,3 +201,32 @@ export const deleteFAQ = async (req: Request, res: Response) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+export const getVisitorCount = async (req: Request, res: Response) => {
+  try {
+    let counter = await prisma.visitorCounter.findFirst();
+    if (!counter) {
+      counter = await prisma.visitorCounter.create({ data: { count: 0 } });
+    }
+    return res.json({ count: counter.count });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const incrementVisitorCount = async (req: Request, res: Response) => {
+  try {
+    let counter = await prisma.visitorCounter.findFirst();
+    if (!counter) {
+      counter = await prisma.visitorCounter.create({ data: { count: 1 } });
+    } else {
+      counter = await prisma.visitorCounter.update({
+        where: { id: counter.id },
+        data: { count: { increment: 1 } }
+      });
+    }
+    return res.json({ count: counter.count });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};

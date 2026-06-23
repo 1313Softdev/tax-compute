@@ -20,6 +20,7 @@ export default function HomePage() {
   const { language, setLanguage, t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'hra' | 'tds' | 'advance'>('hra');
   const [faqs, setFaqs] = useState<any[]>([]);
+  const [visitorCount, setVisitorCount] = useState<number | null>(null);
 
   // 1. HRA CALCULATOR STATE
   const [hraBasic, setHraBasic] = useState(50000);
@@ -59,6 +60,17 @@ export default function HomePage() {
             category: "Deductions"
           }
         ]);
+      });
+
+    // Fetch and increment visitor count
+    fetch('/api/cms/visitor-count/increment', { method: 'POST' })
+      .then(res => {
+        if (res.ok) return res.json();
+        throw new Error();
+      })
+      .then(data => setVisitorCount(data.count))
+      .catch(() => {
+        // Silent catch
       });
   }, []);
 
@@ -473,7 +485,7 @@ export default function HomePage() {
       </section>
 
       {/* -------------------- FOOTER -------------------- */}
-      <footer className="bg-slate-900 text-slate-400 py-12 px-6 border-t border-slate-800 mt-auto text-center text-xs">
+      <footer className="bg-slate-900 text-slate-400 py-12 px-6 border-t border-slate-800 mt-auto text-center text-xs relative">
         <div className="max-w-4xl mx-auto space-y-4">
           <div className="flex items-center justify-center gap-2.5">
             <img src="/logo.png" alt="TaxCompute.in" className="w-6 h-6 rounded-md object-cover shadow-xs" />
@@ -488,6 +500,12 @@ export default function HomePage() {
             <a href="#" className="hover:text-white transition-colors">CA Verification API</a>
           </div>
         </div>
+
+        {visitorCount !== null && (
+          <div className="absolute bottom-4 right-6 text-[10px] text-slate-500 font-mono tracking-tight bg-slate-950/45 px-2 py-0.5 rounded-md border border-slate-800/40 select-none">
+            Visits: {visitorCount.toLocaleString()}
+          </div>
+        )}
       </footer>
     </div>
   );

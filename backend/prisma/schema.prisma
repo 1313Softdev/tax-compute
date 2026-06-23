@@ -104,3 +104,8 @@ model FAQ {
   category  String   // General, Slabs, Deductions, Others
   createdAt DateTime @default(now())
 }
+
+model VisitorCounter {
+  id    String @id @default(uuid())
+  count Int    @default(0)
+}
