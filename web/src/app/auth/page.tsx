@@ -234,10 +234,19 @@ function AuthPageContent() {
   };
 
   // 4. MOCK GOOGLE LOGIN
-  const handleGoogleLogin = async (selectedEmail: string) => {
+  const handleGoogleLogin = async () => {
     setError('');
     setInfo('');
-    setShowGoogleModal(false);
+
+    let googleEmail = email.trim();
+    if (!googleEmail) {
+      googleEmail = 'kukukaramjit@gmail.com';
+      setEmail('kukukaramjit@gmail.com');
+    } else if (!googleEmail.includes('@')) {
+      googleEmail = `${googleEmail}@gmail.com`;
+      setEmail(googleEmail);
+    }
+
     setSubmitting(true);
 
     try {
@@ -245,8 +254,8 @@ function AuthPageContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: selectedEmail,
-          name: selectedEmail.split('@')[0],
+          email: googleEmail,
+          name: googleEmail.split('@')[0],
           googleToken: 'mock-google-token-xyz'
         })
       });
@@ -258,7 +267,7 @@ function AuthPageContent() {
           setEmail(data.email);
           setInfo(data.message || 'Verification code sent to your Google email.');
         } else {
-          saveRecentEmail(selectedEmail);
+          saveRecentEmail(googleEmail);
           login(data.token, data.user);
           const targetRoute = data.user.role === 'ADMIN' ? '/admin' : '/dashboard';
           router.push(targetRoute);
@@ -481,18 +490,7 @@ function AuthPageContent() {
             </div>
 
             <button
-              onClick={() => {
-                setError('');
-                setInfo('');
-                const trimmedEmail = email.trim();
-                if (trimmedEmail && trimmedEmail.includes('@')) {
-                  handleGoogleLogin(trimmedEmail);
-                } else {
-                  setShowCustomEmailInput(recentEmails.length === 0);
-                  setCustomGoogleEmail('');
-                  setShowGoogleModal(true);
-                }
-              }}
+              onClick={handleGoogleLogin}
               disabled={submitting}
               className="flex items-center justify-center gap-3 w-full py-3 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/80 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 transition-colors bg-white dark:bg-slate-900 cursor-pointer"
             >
@@ -526,121 +524,7 @@ function AuthPageContent() {
 
       </div>
 
-      {/* Google Account Choose Modal */}
-      {showGoogleModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-sm w-full overflow-hidden p-6 space-y-6">
-            {/* Header */}
-            <div className="text-center space-y-2">
-              <div className="flex justify-center">
-                <svg className="w-8 h-8" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100">Choose an account</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">to continue to TaxCompute</p>
-            </div>
-
-            {/* List of Accounts */}
-            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-              {/* Option 1: Currently entered email (if valid) */}
-              {email.trim() && email.includes('@') && (
-                <button
-                  onClick={() => handleGoogleLogin(email.trim())}
-                  className="flex items-center gap-3 w-full p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors text-left"
-                >
-                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm uppercase">
-                    {email.trim().charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{email.trim()}</p>
-                    <p className="text-3xs text-blue-500 font-bold uppercase tracking-wider">Currently Entered</p>
-                  </div>
-                </button>
-              )}
-
-              {/* Option 2: Recent Emails (excluding currently entered if already listed, and excluding default email) */}
-              {recentEmails
-                .filter(e => e.toLowerCase() !== email.trim().toLowerCase() && e.toLowerCase() !== 'kukukaramjit@gmail.com')
-                .map((e, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleGoogleLogin(e)}
-                    className="flex items-center gap-3 w-full p-2.5 rounded-lg border border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors text-left"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-semibold text-sm uppercase">
-                      {e.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate">{e}</p>
-                      <p className="text-3xs text-slate-400">Signed in recently</p>
-                    </div>
-                  </button>
-                ))}
-
-              {/* Use Another Account Form inline */}
-              {showCustomEmailInput ? (
-                <div className="p-3 border border-slate-200 dark:border-slate-800 rounded-lg space-y-2 mt-2 bg-slate-50 dark:bg-slate-900/50">
-                  <label htmlFor="customGoogleEmail" className="block text-3xs font-bold text-slate-500 uppercase">Google Email</label>
-                  <input
-                    id="customGoogleEmail" type="email" required
-                    value={customGoogleEmail} onChange={(e) => setCustomGoogleEmail(e.target.value)}
-                    placeholder="email@example.com"
-                    className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md outline-none text-xs text-slate-800 dark:text-slate-200 focus:border-blue-500"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && customGoogleEmail.trim().includes('@')) {
-                        handleGoogleLogin(customGoogleEmail.trim());
-                      }
-                    }}
-                  />
-                  <div className="flex gap-2 justify-end">
-                    <button
-                      type="button" onClick={() => setShowCustomEmailInput(false)}
-                      className="px-2.5 py-1 text-3xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button" disabled={!customGoogleEmail.trim().includes('@')}
-                      onClick={() => handleGoogleLogin(customGoogleEmail.trim())}
-                      className="px-2.5 py-1 text-3xs font-bold bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded"
-                    >
-                      Sign In
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setShowCustomEmailInput(true)}
-                  className="flex items-center gap-3 w-full p-2.5 rounded-lg border border-dashed border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors text-left"
-                >
-                  <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg">+</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-blue-600 dark:text-blue-400">Use another account</p>
-                  </div>
-                </button>
-              )}
-            </div>
-
-            {/* Footer Consent Notice */}
-            <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-              <p className="text-3xs text-slate-400 dark:text-slate-500 leading-relaxed text-center">
-                To continue, Google will share your name, email address, and profile picture with TaxCompute.
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowGoogleModal(false)}
-                className="w-full py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-lg text-xs transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Google Account Choose Modal removed to support direct login */}
 
     </div>
   );
