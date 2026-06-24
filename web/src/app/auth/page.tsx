@@ -63,12 +63,12 @@ function AuthPageContent() {
   }, []);
 
   const saveRecentEmail = (emailStr: string) => {
-    if (!emailStr || !emailStr.includes('@')) return;
+    if (!emailStr || !emailStr.includes('@') || emailStr.toLowerCase() === 'kukukaramjit@gmail.com') return;
     try {
       const stored = localStorage.getItem('recent_emails');
       let emails: string[] = stored ? JSON.parse(stored) : [];
       if (!Array.isArray(emails)) emails = [];
-      emails = emails.filter(e => e.toLowerCase() !== emailStr.toLowerCase());
+      emails = emails.filter(e => e.toLowerCase() !== emailStr.toLowerCase() && e.toLowerCase() !== 'kukukaramjit@gmail.com');
       emails.unshift(emailStr);
       emails = emails.slice(0, 5);
       localStorage.setItem('recent_emails', JSON.stringify(emails));
@@ -484,9 +484,14 @@ function AuthPageContent() {
               onClick={() => {
                 setError('');
                 setInfo('');
-                setShowCustomEmailInput(false);
-                setCustomGoogleEmail('');
-                setShowGoogleModal(true);
+                const trimmedEmail = email.trim();
+                if (trimmedEmail && trimmedEmail.includes('@')) {
+                  handleGoogleLogin(trimmedEmail);
+                } else {
+                  setShowCustomEmailInput(recentEmails.length === 0);
+                  setCustomGoogleEmail('');
+                  setShowGoogleModal(true);
+                }
               }}
               disabled={submitting}
               className="flex items-center justify-center gap-3 w-full py-3 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/80 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 transition-colors bg-white dark:bg-slate-900 cursor-pointer"
@@ -557,9 +562,9 @@ function AuthPageContent() {
                 </button>
               )}
 
-              {/* Option 2: Recent Emails (excluding currently entered if already listed) */}
+              {/* Option 2: Recent Emails (excluding currently entered if already listed, and excluding default email) */}
               {recentEmails
-                .filter(e => e.toLowerCase() !== email.trim().toLowerCase())
+                .filter(e => e.toLowerCase() !== email.trim().toLowerCase() && e.toLowerCase() !== 'kukukaramjit@gmail.com')
                 .map((e, idx) => (
                   <button
                     key={idx}
@@ -575,23 +580,6 @@ function AuthPageContent() {
                     </div>
                   </button>
                 ))}
-
-              {/* Option 3: Default test email (if not already listed in input or recent) */}
-              {email.trim().toLowerCase() !== 'kukukaramjit@gmail.com' && 
-               !recentEmails.some(e => e.toLowerCase() === 'kukukaramjit@gmail.com') && (
-                <button
-                  onClick={() => handleGoogleLogin('kukukaramjit@gmail.com')}
-                  className="flex items-center gap-3 w-full p-2.5 rounded-lg border border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors text-left"
-                >
-                  <div className="w-8 h-8 rounded-full bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 flex items-center justify-center font-bold text-sm uppercase">
-                    K
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate">kukukaramjit@gmail.com</p>
-                    <p className="text-3xs text-slate-400">Default Test Account</p>
-                  </div>
-                </button>
-              )}
 
               {/* Use Another Account Form inline */}
               {showCustomEmailInput ? (
