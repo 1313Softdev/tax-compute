@@ -3,7 +3,7 @@ import PDFDocument from 'pdfkit';
 import prisma from '../db';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { maskPAN } from '../utils/masking';
-import { getOldRegimeConfig, getNewRegimeConfig, calculateAge } from 'shared-engine';
+import { getOldRegimeConfig, getNewRegimeConfig, calculateAge, TaxSlab } from 'shared-engine';
 
 // HELPER TO CONVERT RS TO INDIAN CURRENCY FORMAT (e.g. 1,00,000)
 const formatCurrency = (val: number): string => {
@@ -991,7 +991,7 @@ const generateSingleRegimeComputation = (
   const breakupRows: any[] = [];
   let totalSlabTax = 0;
 
-  slabConfig.slabs.forEach(slab => {
+  slabConfig.slabs.forEach((slab: TaxSlab) => {
     const min = slab.minLimit;
     const max = slab.maxLimit;
     const rate = slab.rate;

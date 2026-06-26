@@ -65,7 +65,7 @@ export const getAnalytics = async (req: Request, res: Response) => {
     const comps = await prisma.taxComputation.findMany({
       select: { taxSaved: true }
     });
-    const totalTaxSaved = comps.reduce((acc, curr) => acc + curr.taxSaved, 0);
+    const totalTaxSaved = comps.reduce((acc: number, curr: { taxSaved: number }) => acc + curr.taxSaved, 0);
 
     // Distribution by Assessment Year
     const ayDistribution = await prisma.taxComputation.groupBy({
@@ -75,7 +75,7 @@ export const getAnalytics = async (req: Request, res: Response) => {
       }
     });
 
-    const ayStats = ayDistribution.map(item => ({
+    const ayStats = ayDistribution.map((item: { assessmentYear: string; _count: { id: number } }) => ({
       year: item.assessmentYear,
       count: item._count.id
     }));
