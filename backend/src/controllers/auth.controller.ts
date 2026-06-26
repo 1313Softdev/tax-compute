@@ -410,3 +410,28 @@ export const forgotPassword = async (req: Request, res: Response) => {
     return res.status(500).json({ error: error.message || 'Password reset request failed' });
   }
 };
+
+// 7. CHANGE PASSWORD (PROTECTED)
+export const changePassword = async (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+  const { newPassword } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+  }
+
+  try {
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash }
+    });
+
+    return res.json({ message: 'Password updated successfully' });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message || 'Failed to update password' });
+  }
+};

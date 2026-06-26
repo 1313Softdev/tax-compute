@@ -3,7 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-import { register, login, googleLogin, sendOTP, verifyOTP, forgotPassword, verifyEmail } from '../controllers/auth.controller';
+import { register, login, googleLogin, sendOTP, verifyOTP, forgotPassword, verifyEmail, changePassword } from '../controllers/auth.controller';
 import { getProfile, updateProfile, uploadDocument, getDocuments, deleteDocument } from '../controllers/profile.controller';
 import { calculateTax, saveComputation, getComputations, getComputationById, deleteComputation, updateComputation } from '../controllers/tax.controller';
 import { exportPDF } from '../controllers/report.controller';
@@ -60,6 +60,7 @@ router.post('/auth/verify-email', verifyEmail);
 router.post('/auth/send-otp', sendOTP);
 router.post('/auth/verify-otp', verifyOTP);
 router.post('/auth/forgot-password', forgotPassword);
+router.put('/auth/change-password', authenticateJWT, changePassword);
 
 // ==========================================
 // 2. USER PROFILE & DOCUMENT ROUTES (Protected)

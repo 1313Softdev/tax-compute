@@ -13,7 +13,8 @@ import {
   Trash2, 
   AlertCircle,
   Newspaper,
-  FileJson
+  FileJson,
+  Lock
 } from 'lucide-react';
 
 export default function UserDashboard() {
@@ -25,6 +26,52 @@ export default function UserDashboard() {
   const [news, setNews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Change Password States
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [updatingPassword, setUpdatingPassword] = useState(false);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (newPassword.length < 6) {
+      setPasswordError('Password must be at least 6 characters long');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
+
+    setUpdatingPassword(true);
+    try {
+      const res = await fetch(`${apiUrl}/auth/change-password`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ newPassword })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPasswordSuccess('Password updated successfully!');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        setPasswordError(data.error || 'Failed to update password');
+      }
+    } catch (err) {
+      setPasswordError('Failed to connect to the server');
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
 
   const [selectedComp, setSelectedComp] = useState<any | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -486,6 +533,58 @@ export default function UserDashboard() {
             </div>
           </div>
         )}
+
+        {/* ACCOUNT SECURITY CARD */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs max-w-xl">
+          <div className="space-y-1 mb-4">
+            <h3 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              <Lock className="w-5 h-5 text-blue-600" />
+              Account Security
+            </h3>
+            <p className="text-2xs text-slate-400">Change or reset your password directly from your dashboard.</p>
+          </div>
+
+          {passwordError && (
+            <div className="mb-4 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 text-2xs font-semibold p-3 rounded-lg border border-red-200 dark:border-red-900/35">
+              {passwordError}
+            </div>
+          )}
+          {passwordSuccess && (
+            <div className="mb-4 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 text-2xs font-semibold p-3 rounded-lg border border-emerald-200 dark:border-emerald-900/35">
+              {passwordSuccess}
+            </div>
+          )}
+
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-2xs font-bold text-slate-500 uppercase">New Password</label>
+                <input
+                  type="password" required
+                  value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 rounded-lg outline-none text-xs text-slate-800 dark:text-slate-200"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-2xs font-bold text-slate-500 uppercase">Confirm Password</label>
+                <input
+                  type="password" required
+                  value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-blue-500 rounded-lg outline-none text-xs text-slate-800 dark:text-slate-200"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit" disabled={updatingPassword}
+              className="py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold rounded-lg text-xs transition-colors shadow-xs cursor-pointer"
+            >
+              {updatingPassword ? 'Updating...' : 'Update Password'}
+            </button>
+          </form>
+        </div>
       </div>
 
       {/* ITR JSON EXPORT MODAL */}
