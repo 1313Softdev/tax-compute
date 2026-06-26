@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd .. && npm run build --workspace=shared-engine && cd web && npm run build",
+  "installCommand": "cd .. && npm install && cd web",
+  "framework": "nextjs"
+}

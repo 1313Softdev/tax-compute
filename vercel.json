@@ -1,6 +1,0 @@
-{
-  "buildCommand": "npm run build --workspace=shared-engine && npm run build --workspace=backend && npm run build --workspace=web",
-  "outputDirectory": "web/.next",
-  "installCommand": "npm install",
-  "framework": "nextjs"
-}
